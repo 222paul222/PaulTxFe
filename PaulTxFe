@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PaulTxFe OS - Linux Mint XFCE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+        }
+
+        /* PANTALLA DE ARRANQUE (BOOT) */
+        #boot-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000;
+            color: #fff;
+            font-family: monospace;
+            padding: 20px;
+            font-size: 14px;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        /* ESCRITORIO PRINCIPAL */
+        #desktop {
+            width: 100%;
+            height: 100%;
+            background: linear-index(135deg, #1e3c72 0%, #2a5298 100%);
+            background-color: #1a3322; /* Tono verde Mint oscuro */
+            position: relative;
+            display: none;
+        }
+
+        /* ICONOS DEL ESCRITORIO */
+        .desktop-icon {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+        }
+        .desktop-icon img {
+            width: 45px;
+            height: 45px;
+            margin-bottom: 5px;
+        }
+        .desktop-icon span {
+            color: white;
+            font-size: 12px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+
+        /* VENTANA TERMINAL XFCE */
+        .window {
+            position: absolute;
+            top: 10%;
+            left: 5%;
+            width: 90%;
+            height: 70%;
+            background-color: #121212;
+            border: 1px solid #333;
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .window-header {
+            background-color: #2b2b2b;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #444;
+            color: #ddd;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .window-controls span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-left: 5px;
+            border-radius: 50%;
+            background-color: #555;
+            cursor: pointer;
+        }
+        .window-body {
+            flex: 1;
+            padding: 12px;
+            font-family: monospace;
+            color: #87ff5f;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+
+        /* BARRA DE TAREAS INFERIOR (XFCE DOCK) */
+        #taskbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background-color: #242424;
+            border-top: 1px solid #333;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            justify-content: space-between;
+        }
+        .start-button {
+            background-color: #148045;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .system-clock {
+            color: #aaa;
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        /* INPUTS Y PROMPT */
+        .prompt-line {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+        .prompt-text {
+            color: #87ff5f;
+            white-space: nowrap;
+        }
+        #cmd-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: monospace;
+            font-size: 13px;
+            outline: none;
+            flex: 1;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SECUENCIA DE BOOT INICIAL -->
+    <div id="boot-screen">
+        <div id="boot-log"></div>
+    </div>
+
+    <!-- ENTORNO GRÁFICO PERSONALIZADO -->
+    <div id="desktop">
+        
+        <!-- Icono de Sistema -->
+        <div class="desktop-icon" onclick="openTerminal()">
+            <!-- Icono simulado con CSS simple -->
+            <div style="font-size: 35px;">💻</div>
+            <span>Terminal PaulTxFe</span>
+        </div>
+
+        <!-- Ventana de la Consola XFCE -->
+        <div class="window" id="terminal-window">
+            <div class="window-header">
+                <span>user@PaulTxFe-mint: ~</span>
+                <div class="window-controls">
+                    <span style="background-color: #ff5f56;"></span>
+                    <span style="background-color: #ffbd2e;"></span>
+                    <span style="background-color: #27c93f;"></span>
+                </div>
+            </div>
+            <div class="window-body" id="term-body" onclick="focusInput()">
+                <div id="history"></div>
+                <div class="prompt-line">
+                    <span class="prompt-text">user@PaulTxFe-mint:~$</span>
+                    <input type="text" id="cmd-input" autofocus autocomplete="off" autocapitalize="none" spellcheck="false">
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra inferior estilo XFCE -->
+        <div id="taskbar">
+            <div class="start-button">🌿 PaulTxFe Menu</div>
+            <div class="system-clock" id="clock">12:00</div>
+        </div>
+    </div>
+
+    <script>
+        // Simulación de logs de arranque del kernel personalizado
+        const logs = [
+            "[    0.000000] Linux version 6.1.0-PaulTxFe-generic (gcc version 12.2.0)",
+            "[    0.045120] CPU0: AMD Ryzen Custom PaulTxFe Emulation at 3.40GHz",
+            "[    0.452112] ACPI: Core revision 20260101",
+            "[    1.021044] Netfilter messages via NETLINK v0.15",
+            "[    1.568912] File system initialized: ext4 overlay fs",
+            "[    2.102354] Reaching runlevel 5 (Graphical Multi-User)...",
+            "[    2.894120] Starting PaulTxFe-XFCE Display Manager...",
+            "¡Sistema Listo! Cargando Escritorio..."
+        ];
+
+        let logIndex = 0;
+        const logContainer = document.getElementById("boot-log");
+
+        function printBoot() {
+            if (logIndex < logs.length) {
+                logContainer.innerHTML += logs[logIndex] + "<br>";
+                logIndex++;
+                setTimeout(printBoot, 300);
+            } else {
+                setTimeout(() => {
+                    document.getElementById("boot-screen").style.display = "none";
+                    document.getElementById("desktop").style.display = "block";
+                    initTerminalSystem();
+                }, 800);
+            }
+        }
+        window.onload = printBoot;
+
+        // Actualizar Reloj del Sistema
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById("clock").innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }, 1000);
+
+        // Sistema Interactivo de la Terminal Personalizada
+        const cmdInput = document.getElementById("cmd-input");
+        const history = document.getElementById("history");
+
+        function focusInput() {
+            cmdInput.focus();
+        }
+
+        function initTerminalSystem() {
+            history.innerHTML = "Welcome to PaulTxFe OS (Linux Mint 21.3 XFCE Edition)<br>* Type 'help' to see available commands.<br><br>";
+            focusInput();
+        }
+
+        cmdInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                const command = cmdInput.value.trim();
+                if (command !== "") {
+                    processCommand(command);
+                }
+                cmdInput.value = "";
+            }
+        });
+
+        function processCommand(cmd) {
+            let reply = "";
+            history.innerHTML += `<div style="color: #fff;">user@PaulTxFe-mint:~$ ${cmd}</div>`;
+
+            switch(cmd.toLowerCase()) {
+                case 'help':
+                    reply = "Comandos disponibles: <br>• <b>neofetch</b> - Muestra la info del sistema PaulTxFe.<br>• <b>clear</b> - Limpia la pantalla.<br>• <b>uname -a</b> - Ver detalles del Kernel.<br>• <b>whoami</b> - Usuario actual.";
+                    break;
+                case 'clear':
+                    history.innerHTML = "";
+                    return;
+                case 'whoami':
+                    reply = "user_paultxfe";
+                    break;
+                case 'uname -a':
+                    reply = "Linux PaulTxFe-mint 6.1.0-PaulTxFe-generic #1 SMP PREEMPT_DYNAMIC 2026 x86_64 GNU/Linux";
+                    break;
+                case 'neofetch':
+                    reply = `
+<pre style="color: #87ff5f; font-family: monospace; line-height: 1.2;">
+   <b>PaulTxFe OS</b>
+   ------------
+   OS: Linux Mint XFCE (PaulTxFe Custom Edition)
+   Kernel: 6.1.0-PaulTxFe-x86_64
+   Uptime: 1 min
+   Resolution: Mobile Web Screen
+   DE: XFCE 4.18 (PaulTxFe Custom)
+   Shell: bash 5.2.15
+   Terminal: xfce4-terminal-web
+   Memory: 4096MiB / 8192MiB
+</pre>`;
+                    break;
+                default:
+                    reply = `bash: ${cmd}: command not found. Try 'help'.`;
+            }
+
+            history.innerHTML += `<div>${reply}</div><br>`;
+            document.getElementById("term-body").scrollTop = document.getElementById("term-body").scrollHeight;
+        }
+
+        function openTerminal() {
+            document.getElementById("terminal-window").style.display = "flex";
+        }
+    </script>
+</body>
+</html>
