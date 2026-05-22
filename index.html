@@ -3,8 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PaulTxFe OS - Linux Mint XFCE</title>
+    <title>PaulTxFe OS - Tactical Red Linux</title>
     <style>
+        :root {
+            --bg-dark: #000000;
+            --red-dark: #4a0000;
+            --red-mid: #8b0000;
+            --red-bright: #ff0000; /* Rojo puro brillante */
+            --text-color: #ff3333;
+            --text-white: #ffffff;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -15,282 +24,522 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #000;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-dark);
+            color: var(--text-color);
         }
 
-        /* PANTALLA DE ARRANQUE (OCULTA POR DEFECTO) */
-        #boot-screen {
+        /* ANIMACIÓN PARPADEO DE LA CALAVERA GRÁFICA */
+        @keyframes skullPulse {
+            0% { color: var(--red-bright); fill: var(--red-bright); filter: drop-shadow(0 0 8px var(--red-bright)); }
+            33% { color: var(--text-white); fill: var(--text-white); filter: drop-shadow(0 0 8px var(--text-white)); }
+            66% { color: #111111; fill: #111111; filter: drop-shadow(0 0 2px #000); }
+            100% { color: var(--red-bright); fill: var(--red-bright); filter: drop-shadow(0 0 8px var(--red-bright)); }
+        }
+        
+        .animated-skull-graphic {
+            width: 120px; /* Tamaño de la calavera */
+            height: auto;
+            animation: skullPulse 4s infinite ease-in-out;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        /* MODO TERMINAL DE ARRANQUE (PANTALLA COMPLETA) */
+        #boot-terminal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #000;
-            color: #fff;
-            font-family: monospace;
-            padding: 20px;
-            font-size: 14px;
-            z-index: 9999;
-            overflow: hidden;
+            background-color: var(--bg-dark);
+            padding: 15px;
+            overflow-y: auto;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* ESCRITORIO PRINCIPAL */
+        /* ENTORNO GRÁFICO (OCULTO AL INICIO) */
         #desktop {
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            background-color: #1a3322; /* Tono verde Mint oscuro */
+            background: radial-gradient(circle, #260000 0%, #000000 100%);
             position: relative;
+            overflow: hidden;
             display: none;
         }
 
         /* ICONOS DEL ESCRITORIO */
-        .desktop-icon {
+        .desktop-grid {
             position: absolute;
             top: 20px;
             left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        .desktop-icon {
             width: 80px;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
             cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid transparent;
         }
-        .desktop-icon img {
-            width: 45px;
-            height: 45px;
+        .desktop-icon:active {
+            background-color: rgba(255, 0, 0, 0.15);
+            border: 1px solid var(--red-bright);
+        }
+        .desktop-icon .icon-img {
+            font-size: 38px;
             margin-bottom: 5px;
+            filter: drop-shadow(0px 0px 6px var(--red-mid));
         }
         .desktop-icon span {
-            color: white;
-            font-size: 12px;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            color: var(--text-white);
+            font-size: 11px;
+            text-shadow: 1px 1px 4px #000;
         }
 
-        /* VENTANA TERMINAL XFCE */
+        /* VENTANAS FLOTANTES ROJO OSCURO */
         .window {
             position: absolute;
-            top: 10%;
-            left: 5%;
-            width: 90%;
+            width: 92%;
             height: 70%;
-            background-color: #121212;
-            border: 1px solid #333;
-            border-radius: 6px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            top: 8%;
+            left: 4%;
+            background-color: #0c0000;
+            border: 2px solid var(--red-mid);
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(139,0,0,0.5);
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            z-index: 10;
         }
         .window-header {
-            background-color: #2b2b2b;
+            background-color: var(--red-dark);
             padding: 8px 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #444;
-            color: #ddd;
+            border-bottom: 1px solid var(--red-mid);
+            color: var(--text-white);
             font-size: 13px;
             font-weight: bold;
+            letter-spacing: 1px;
         }
         .window-controls span {
             display: inline-block;
-            width: 12px;
-            height: 12px;
-            margin-left: 5px;
-            border-radius: 50%;
-            background-color: #555;
+            width: 14px;
+            height: 14px;
+            background-color: var(--red-bright);
+            border-radius: 3px;
             cursor: pointer;
+            text-align: center;
+            line-height: 12px;
+            font-size: 10px;
+            color: #000;
+            font-weight: bold;
         }
         .window-body {
             flex: 1;
             padding: 12px;
-            font-family: monospace;
-            color: #87ff5f;
             overflow-y: auto;
-            font-size: 13px;
+            color: var(--text-white);
         }
 
-        /* BARRA DE TAREAS INFERIOR (XFCE DOCK) */
-        #taskbar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 40px;
-            background-color: #242424;
-            border-top: 1px solid #333;
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            justify-content: space-between;
+        /* TERMINAL INTEGRADA EN ESCRITORIO */
+        .terminal-body {
+            background-color: #000000;
+            color: var(--text-color);
         }
-        .start-button {
-            background-color: #148045;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 3px;
-            font-size: 12px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .system-clock {
-            color: #aaa;
-            font-size: 12px;
-            font-family: monospace;
-        }
-
-        /* INPUTS Y PROMPT */
         .prompt-line {
             display: flex;
             align-items: center;
             margin-top: 5px;
         }
         .prompt-text {
-            color: #87ff5f;
             white-space: nowrap;
         }
-        #cmd-input {
+        .cmd-input-field {
             background: transparent;
             border: none;
-            color: #fff;
+            color: var(--text-white);
             font-family: monospace;
-            font-size: 13px;
+            font-size: 14px;
             outline: none;
             flex: 1;
             margin-left: 5px;
+        }
+
+        /* APLICACIÓN NAVEGADOR (WEB BROWSER) */
+        .browser-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+        .browser-navbar {
+            display: flex;
+            gap: 5px;
+            background-color: #150000;
+            padding: 6px;
+            border-bottom: 1px solid var(--red-mid);
+        }
+        .browser-url-bar {
+            flex: 1;
+            background-color: #000;
+            border: 1px solid var(--red-mid);
+            color: #fff;
+            padding: 4px 8px;
+            font-size: 12px;
+            outline: none;
+        }
+        .browser-btn {
+            background-color: var(--red-mid);
+            color: #fff;
+            border: none;
+            padding: 4px 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .browser-frame {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            border: none;
+        }
+
+        /* BARRA DE TAREAS INFERIOR */
+        #taskbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background-color: #0f0000;
+            border-top: 2px solid var(--red-mid);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            justify-content: space-between;
+            z-index: 99999;
+        }
+        .start-button {
+            background-color: var(--red-mid);
+            color: white;
+            padding: 5px 14px;
+            border-radius: 2px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid var(--red-bright);
+        }
+        .start-button:active {
+            background-color: var(--red-dark);
+        }
+        .system-clock {
+            color: var(--text-color);
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        /* MENÚ DE INICIO TÁCTICO */
+        #mint-menu {
+            position: absolute;
+            bottom: 42px;
+            left: 5px;
+            width: 270px;
+            background-color: #0a0000;
+            border: 2px solid var(--red-mid);
+            box-shadow: 0 0 15px rgba(255,0,0,0.4);
+            display: none;
+            flex-direction: column;
+            z-index: 100000;
+        }
+        .menu-header {
+            background-color: var(--red-dark);
+            color: white;
+            padding: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--red-mid);
+            letter-spacing: 1px;
+        }
+        .menu-item {
+            padding: 12px 15px;
+            color: #ccc;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #1a0000;
+        }
+        .menu-item:active {
+            background-color: var(--red-dark);
+            color: var(--text-white);
         }
     </style>
 </head>
 <body>
 
-    <div id="boot-screen">
-        <div id="boot-log"></div>
+    <div id="boot-terminal" onclick="focusBootInput()">
+        <div id="boot-history"></div>
+        <div class="prompt-line">
+            <span class="prompt-text" style="color: var(--text-white);">paultxfe@root:~#</span>
+            <input type="text" id="boot-cmd-input" class="cmd-input-field" autofocus autocomplete="off" autocapitalize="none" spellcheck="false">
+        </div>
     </div>
 
     <div id="desktop">
         
-        <div class="desktop-icon" onclick="openTerminal()">
-            <div style="font-size: 35px;">💻</div>
-            <span>Terminal PaulTxFe</span>
+        <div class="desktop-grid">
+            <div class="desktop-icon" onclick="openWindow('terminal-window')">
+                <div class="icon-img">💀</div>
+                <span>Terminal Shell</span>
+            </div>
+            
+            <div class="desktop-icon" onclick="openWindow('browser-window')">
+                <div class="icon-img">🌐</div>
+                <span>Red Browser</span>
+            </div>
+
+            <div class="desktop-icon" onclick="openWindow('winlator-window')">
+                <div class="icon-img">📦</div>
+                <span>Winlator Mint</span>
+            </div>
         </div>
 
-        <div class="window" id="terminal-window">
+        <div class="window" id="terminal-window" style="display: none;">
             <div class="window-header">
-                <span>user@PaulTxFe-mint: ~</span>
-                <div class="window-controls">
-                    <span style="background-color: #ff5f56;"></span>
-                    <span style="background-color: #ffbd2e;"></span>
-                    <span style="background-color: #27c93f;"></span>
-                </div>
+                <span>shell_core@PaulTxFe-OS: ~</span>
+                <div class="window-controls"><span onclick="closeWindow('terminal-window')">X</span></div>
             </div>
-            <div class="window-body" id="term-body" onclick="focusInput()">
-                <div id="history"></div>
+            <div class="window-body terminal-body" id="gui-term-body" onclick="focusGuiInput()">
+                <div id="gui-history"></div>
                 <div class="prompt-line">
-                    <span class="prompt-text">user@PaulTxFe-mint:~$</span>
-                    <input type="text" id="cmd-input" autofocus autocomplete="off" autocapitalize="none" spellcheck="false">
+                    <span class="prompt-text">paultxfe@os:~$</span>
+                    <input type="text" id="gui-cmd-input" class="cmd-input-field" autocomplete="off" autocapitalize="none" spellcheck="false">
                 </div>
             </div>
+        </div>
+
+        <div class="window" id="browser-window" style="display: none;">
+            <div class="window-header">
+                <span>Tactical Red Web Browser</span>
+                <div class="window-controls"><span onclick="closeWindow('browser-window')">X</span></div>
+            </div>
+            <div class="window-body" style="padding: 0; background-color: #000;">
+                <div class="browser-container">
+                    <div class="browser-navbar">
+                        <input type="text" id="browser-url" class="browser-url-bar" value="https://www.bing.com">
+                        <button class="browser-btn" onclick="navigateBrowser()">Ir</button>
+                    </div>
+                    <iframe id="browser-iframe" class="browser-frame" src="https://www.bing.com"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <div class="window" id="winlator-window" style="display: none;">
+            <div class="window-header">
+                <span>Winlator Package Manager & Subsystem</span>
+                <div class="window-controls"><span onclick="closeWindow('winlator-window')">X</span></div>
+            </div>
+            <div class="window-body" style="background-color: #100000; font-family: sans-serif;">
+                <h4 style="color: var(--red-bright); margin-bottom: 8px;">Subsistema Emulador PaulTxFe</h4>
+                <p style="font-size: 12px; color: #ccc; margin-bottom: 15px;">Usa la consola del sistema con <span style="color: #fff; font-family: monospace;">sudo apt install [nombre]</span> para desplegar herramientas de Windows/Linux.</p>
+                <div style="border: 1px solid var(--red-mid); padding: 10px; background-color: #000;">
+                    <p style="font-size: 13px; color: #aaa;">Paquetes Registrados:</p>
+                    <ul style="font-size: 12px; margin-left: 20px; margin-top: 5px; color: #fff;" id="installed-list-ui">
+                        <li>• base-system [Instalado]</li>
+                        <li>• xfce4-core [Instalado]</li>
+                        <li>• wine-subsystem [No Instalado]</li>
+                        <li>• doom-emulator [No Instalado]</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="mint-menu">
+            <div class="menu-header">☣️ SYSTEM MENU</div>
+            <div class="menu-item" onclick="openWindow('terminal-window'); toggleMenu();">💻 Consola Terminal</div>
+            <div class="menu-item" onclick="openWindow('browser-window'); toggleMenu();">🌐 Internet Browser</div>
+            <div class="menu-item" onclick="openWindow('winlator-window'); toggleMenu();">📦 Winlator Packages</div>
+            <div class="menu-item" onclick="location.reload();">🔄 Cerrar Sesión (Log out)</div>
         </div>
 
         <div id="taskbar">
-            <div class="start-button">🌿 PaulTxFe Menu</div>
-            <div class="system-clock" id="clock">12:00</div>
+            <div class="start-button" onclick="toggleMenu()">⚡ MENÚ</div>
+            <div class="system-clock" id="clock">00:00</div>
         </div>
     </div>
 
     <script>
-        // Simulación de logs de arranque del kernel personalizado
-        const logs = [
-            "[    0.000000] Linux version 6.1.0-PaulTxFe-generic (gcc version 12.2.0)",
-            "[    0.045120] CPU0: AMD Ryzen Custom PaulTxFe Emulation at 3.40GHz",
-            "[    0.452112] ACPI: Core revision 20260101",
-            "[    1.021044] Netfilter messages via NETLINK v0.15",
-            "[    1.568912] File system initialized: ext4 overlay fs",
-            "[    2.102354] Reaching runlevel 5 (Graphical Multi-User)...",
-            "[    2.894120] Starting PaulTxFe-XFCE Display Manager...",
-            "¡Sistema Listo! Cargando Escritorio..."
-        ];
+        // Registro global de aplicaciones simuladas para instalar
+        let installedPackages = ["base-system", "xfce4-core"];
 
-        // FUNCIÓN MODIFICADA: Entra de golpe directo al escritorio
-        function printBoot() {
-            document.getElementById("boot-screen").style.display = "none";
-            document.getElementById("desktop").style.display = "block";
-            initTerminalSystem();
-        }
-        window.onload = printBoot;
+        // Elementos de Consolas
+        const bootInput = document.getElementById("boot-cmd-input");
+        const bootHistory = document.getElementById("boot-history");
+        const guiInput = document.getElementById("gui-cmd-input");
+        const guiHistory = document.getElementById("gui-history");
 
-        // Actualizar Reloj del Sistema
-        setInterval(() => {
+        function focusBootInput() { bootInput.focus(); }
+        function focusGuiInput() { guiInput.focus(); }
+
+        // Inicializar logs en la consola negra de arranque
+        window.onload = function() {
+            bootHistory.innerHTML = `
+<div>[ OK ] Loaded Tactical Red Kernel V6.1-PaulTxFe</div>
+<div>[ OK ] Mounting dark security overlays...</div>
+<div>[ SYSTEM ] PaulTxFe OS Core active.</div>
+<div style="color: #fff; margin-top: 10px; font-weight: bold;">Escribe <span style="color: var(--red-bright);">'start PaulTxFe'</span> para inicializar el entorno gráfico UI de Linux.</div>
+<br>`;
+            focusBootInput();
+            updateClock();
+            setInterval(updateClock, 1000);
+        };
+
+        function updateClock() {
             const now = new Date();
-            document.getElementById("clock").innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        }, 1000);
-
-        // Sistema Interactivo de la Terminal Personalizada
-        const cmdInput = document.getElementById("cmd-input");
-        const history = document.getElementById("history");
-
-        function focusInput() {
-            cmdInput.focus();
+            const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById("clock").innerText = timeStr;
         }
 
-        function initTerminalSystem() {
-            history.innerHTML = "Welcome to PaulTxFe OS (Linux Mint 21.3 XFCE Edition)<br>* Type 'help' to see available commands.<br><br>";
-            focusInput();
+        function toggleMenu() {
+            const menu = document.getElementById("mint-menu");
+            menu.style.display = (menu.style.display === "flex") ? "none" : "flex";
         }
 
-        cmdInput.addEventListener("keydown", function(e) {
+        function openWindow(id) {
+            document.getElementById(id).style.display = "flex";
+            if(id === 'terminal-window') setTimeout(focusGuiInput, 100);
+        }
+
+        function closeWindow(id) {
+            document.getElementById(id).style.display = "none";
+        }
+
+        function navigateBrowser() {
+            let url = document.getElementById("browser-url").value;
+            if(!url.startsWith("http://") && !url.startsWith("https://")) {
+                url = "https://" + url;
+            }
+            document.getElementById("browser-iframe").src = url;
+        }
+
+        // CONTROLADOR REPOSITORIO INTERNO (Instalaciones)
+        function runInstallation(packageName, outputContainer) {
+            if (installedPackages.includes(packageName)) {
+                return `<div>apt: ${packageName} ya se encuentra instalado en la versión más reciente.</div>`;
+            }
+            if (packageName === "wine-subsystem" || packageName === "doom-emulator") {
+                installedPackages.push(packageName);
+                // Actualizar la interfaz de Winlator en tiempo real
+                document.getElementById("installed-list-ui").innerHTML = `
+                    <li>• base-system [Instalado]</li>
+                    <li>• xfce4-core [Instalado]</li>
+                    <li>• wine-subsystem [${installedPackages.includes('wine-subsystem') ? 'Instalado' : 'No Instalado'}]</li>
+                    <li>• doom-emulator [${installedPackages.includes('doom-emulator') ? 'Instalado' : 'No Instalado'}]</li>`;
+                return `
+<div style="color: #fff;">Leyendo lista de paquetes... Hecho</div>
+<div style="color: #fff;">Se instalarán los siguientes paquetes NUEVOS: <b>${packageName}</b></div>
+<div>Descargando librerías binarias desde servidor seguro PaulTxFe... [100%]</div>
+<div style="color: #87ff5f;">Desempaquetando e instalando arquitectura virtual... ¡Éxito!</div>`;
+            } else {
+                return `<div style="color: var(--red-bright);">E: No se pudo encontrar el paquete binario '${packageName}'. Intenta con 'wine-subsystem' o 'doom-emulator'.</div>`;
+            }
+        }
+
+        // PROCESADOR COMANDOS CONSOLE 1: ARRANQUE PRINCIPAL
+        bootInput.addEventListener("keydown", function(e) {
             if (e.key === "Enter") {
-                const command = cmdInput.value.trim();
+                const command = bootInput.value.trim();
                 if (command !== "") {
-                    processCommand(command);
+                    bootHistory.innerHTML += `<div style="color: #fff;">paultxfe@root:~# ${command}</div>`;
+                    
+                    if (command.toLowerCase() === "start paultxfe") {
+                        bootHistory.innerHTML += `<div>Inicializando servidor gráfico X11... Entrando a Escritorio.</div>`;
+                        setTimeout(() => {
+                            document.getElementById("boot-terminal").style.display = "none";
+                            document.getElementById("desktop").style.display = "block";
+                            guiHistory.innerHTML = "Consola Shell secundaria lista. Escribe 'help' o 'neofetch'.<br><br>";
+                        }, 800);
+                    } else if (command.toLowerCase() === "help") {
+                        bootHistory.innerHTML += `<div>Comandos de arranque:<br>• <b>start PaulTxFe</b> - Entra al modo UI de Escritorio.<br>• <b>neofetch</b> - Muestra info y la calavera.<br>• <b>clear</b> - Limpia la pantalla.</div><br>`;
+                    } else if (command.toLowerCase() === "neofetch") {
+                        bootHistory.innerHTML += getNeofetchOutput();
+                    } else if (command.toLowerCase() === "clear") {
+                        bootHistory.innerHTML = "";
+                    } else {
+                        bootHistory.innerHTML += `<div>Falta inicializar interfaz gráfica. Ejecuta 'start PaulTxFe' para acceder a todo el software.</div><br>`;
+                    }
                 }
-                cmdInput.value = "";
+                bootInput.value = "";
+                // Corrección: scrolleo automático
+                const bt = document.getElementById("boot-terminal");
+                bt.scrollTop = bt.scrollHeight;
             }
         });
 
-        function processCommand(cmd) {
-            let reply = "";
-            history.innerHTML += `<div style="color: #fff;">user@PaulTxFe-mint:~$ ${cmd}</div>`;
-
-            switch(cmd.toLowerCase()) {
-                case 'help':
-                    reply = "Comandos disponibles: <br>• <b>neofetch</b> - Muestra la info del sistema PaulTxFe.<br>• <b>clear</b> - Limpia la pantalla.<br>• <b>uname -a</b> - Ver detalles del Kernel.<br>• <b>whoami</b> - Usuario actual.";
-                    break;
-                case 'clear':
-                    history.innerHTML = "";
-                    return;
-                case 'whoami':
-                    reply = "user_paultxfe";
-                    break;
-                case 'uname -a':
-                    reply = "Linux PaulTxFe-mint 6.1.0-PaulTxFe-generic #1 SMP PREEMPT_DYNAMIC 2026 x86_64 GNU/Linux";
-                    break;
-                case 'neofetch':
-                    reply = `
-<pre style="color: #87ff5f; font-family: monospace; line-height: 1.2;">
-   <b>PaulTxFe OS</b>
-   ------------
-   OS: Linux Mint XFCE (PaulTxFe Custom Edition)
-   Kernel: 6.1.0-PaulTxFe-x86_64
-   Uptime: 1 min
-   Resolution: Mobile Web Screen
-   DE: XFCE 4.18 (PaulTxFe Custom)
-   Shell: bash 5.2.15
-   Terminal: xfce4-terminal-web
-   Memory: 4096MiB / 8192MiB
-</pre>`;
-                    break;
-                default:
-                    reply = `bash: ${cmd}: command not found. Try 'help'.`;
+        // PROCESADOR COMANDOS CONSOLE 2: ESCRITORIO (GUI)
+        guiInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                const command = guiInput.value.trim();
+                if (command !== "") {
+                    guiHistory.innerHTML += `<div style="color: #fff;">paultxfe@os:~$ ${command}</div>`;
+                    
+                    const args = command.split(" ");
+                    
+                    if (command.toLowerCase() === "neofetch") {
+                        guiHistory.innerHTML += getNeofetchOutput();
+                    } else if (command.toLowerCase() === "help") {
+                        guiHistory.innerHTML += `<div>Comandos activos:<br>• <b>neofetch</b> - Ver calavera parpadeante y sistema.<br>• <b>sudo apt install [paquete]</b> - Instala simulaciones Winlator.<br>• <b>clear</b> - Limpiar pantalla.</div><br>`;
+                    } else if (command.toLowerCase() === "clear") {
+                        guiHistory.innerHTML = "";
+                    } else if (args[0] === "sudo" && args[1] === "apt" && args[2] === "install") {
+                        if(!args[3]) {
+                            guiHistory.innerHTML += "<div>Error: Especifica el paquete. Ej: sudo apt install wine-subsystem</div><br>";
+                        } else {
+                            guiHistory.innerHTML += runInstallation(args[3], guiHistory);
+                        }
+                    } else {
+                        guiHistory.innerHTML += `<div>bash: ${command}: comando no reconocido. Escribe 'help'.</div><br>`;
+                    }
+                }
+                guiInput.value = "";
+                // Corrección: scrolleo automático
+                const gtb = document.getElementById("gui-term-body");
+                gtb.scrollTop = gtb.scrollHeight;
             }
+        });
 
-            history.innerHTML += `<div>${reply}</div><br>`;
-            document.getElementById("term-body").scrollTop = document.getElementById("term-body").scrollHeight;
-        }
+        // GENERADOR DE TEXTO NEOFETCH CON LA CALAVERA GRÁFICA REALISTA
+        function getNeofetchOutput() {
+            // Calavera gráfica táctica realista integrada (formato de datos de imagen)
+            const skullGraphic = "https://i.imgur.com/83pM4kE.png"; 
 
-        function openTerminal() {
-            document.getElementById("terminal-window").style.display = "flex";
+            return `
+<div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; margin-top: 15px; margin-bottom: 15px;">
+    <img src="${skullGraphic}" class="animated-skull-graphic" alt="Tactical Skull Emblem">
+
+<div style="color: #fff; font-family: monospace; font-size: 13px; line-height: 1.4; padding-top: 5px;">
+   <b style="color: var(--red-bright); font-size: 16px; letter-spacing: 1px;">PaulTxFe TACTICAL-OS</b><br>
+   ----------------------------<br>
+   <b>OS</b>: Linux Mint (Tactical Red UI)<br>
+   <b>Kernel</b>: 6.1.0-PaulTxFe-Hardcore<br>
+   <b>Uptime</b>: Cyberspace Operational<br>
+   <b>DE</b>: XFCE 4.18 (Modified)<br>
+   <b>Theme</b>: Tactical Red & Black<br>
+   <b>Shell</b>: bash 5.2<br>
+   <b>Winlator Layer</b>: Enabled (☣️)<br>
+   <b>Status</b>: <span style="color: var(--red-bright);">SECURE</span>
+</div>
+</div><br>`;
         }
     </script>
 </body>
