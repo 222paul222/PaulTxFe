@@ -499,48 +499,4 @@
                         guiHistory.innerHTML += getNeofetchOutput();
                     } else if (command.toLowerCase() === "help") {
                         guiHistory.innerHTML += `<div>Comandos activos:<br>• <b>neofetch</b> - Ver calavera parpadeante y sistema.<br>• <b>sudo apt install [paquete]</b> - Instala simulaciones Winlator.<br>• <b>clear</b> - Limpiar pantalla.</div><br>`;
-                    } else if (command.toLowerCase() === "clear") {
-                        guiHistory.innerHTML = "";
-                    } else if (args[0] === "sudo" && args[1] === "apt" && args[2] === "install") {
-                        if(!args[3]) {
-                            guiHistory.innerHTML += "<div>Error: Especifica el paquete. Ej: sudo apt install wine-subsystem</div><br>";
-                        } else {
-                            guiHistory.innerHTML += runInstallation(args[3], guiHistory);
-                        }
-                    } else {
-                        guiHistory.innerHTML += `<div>bash: ${command}: comando no reconocido. Escribe 'help'.</div><br>`;
-                    }
-                }
-                guiInput.value = "";
-                // Corrección: scrolleo automático
-                const gtb = document.getElementById("gui-term-body");
-                gtb.scrollTop = gtb.scrollHeight;
-            }
-        });
-
-        // GENERADOR DE TEXTO NEOFETCH CON LA CALAVERA GRÁFICA REALISTA
-        function getNeofetchOutput() {
-            // Calavera gráfica táctica realista integrada (formato de datos de imagen)
-            const skullGraphic = "https://i.imgur.com/83pM4kE.png"; 
-
-            return `
-<div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; margin-top: 15px; margin-bottom: 15px;">
-    <img src="${skullGraphic}" class="animated-skull-graphic" alt="Tactical Skull Emblem">
-
-<div style="color: #fff; font-family: monospace; font-size: 13px; line-height: 1.4; padding-top: 5px;">
-   <b style="color: var(--red-bright); font-size: 16px; letter-spacing: 1px;">PaulTxFe TACTICAL-OS</b><br>
-   ----------------------------<br>
-   <b>OS</b>: Linux Mint (Tactical Red UI)<br>
-   <b>Kernel</b>: 6.1.0-PaulTxFe-Hardcore<br>
-   <b>Uptime</b>: Cyberspace Operational<br>
-   <b>DE</b>: XFCE 4.18 (Modified)<br>
-   <b>Theme</b>: Tactical Red & Black<br>
-   <b>Shell</b>: bash 5.2<br>
-   <b>Winlator Layer</b>: Enabled (☣️)<br>
-   <b>Status</b>: <span style="color: var(--red-bright);">SECURE</span>
-</div>
-</div><br>`;
-        }
-    </script>
-</body>
-</html>
+         
